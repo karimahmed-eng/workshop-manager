@@ -1,3 +1,149 @@
 <h1>Jobs</h1>
 
-<p>Jobs module coming soon.</p>
+<div class="jobs-container">
+
+  <div class="jobs-toolbar">
+
+    <input
+      id="jobSearch"
+      type="text"
+      placeholder="Search jobs..."
+    >
+
+    <button onclick="loadJobs()">
+      Refresh
+    </button>
+
+  </div>
+
+
+  <table class="jobs-table">
+
+    <thead>
+      <tr>
+        <th>Job</th>
+        <th>Client</th>
+        <th>Mobile</th>
+        <th>Vehicle</th>
+        <th>Status</th>
+        <th>Center</th>
+      </tr>
+    </thead>
+
+    <tbody id="jobsTableBody"></tbody>
+
+  </table>
+
+</div>
+
+
+<script>
+
+let jobsCache = [];
+
+
+async function loadJobs() {
+
+  try {
+
+    jobsCache = await API.run("getJobs");
+
+    renderJobs(jobsCache);
+
+  }
+
+  catch(error) {
+
+    console.error(
+      "Jobs loading failed:",
+      error
+    );
+
+  }
+
+}
+
+
+function renderJobs(jobs) {
+
+  const tbody =
+    document.getElementById("jobsTableBody");
+
+
+  tbody.innerHTML = "";
+
+
+  jobs.forEach(job => {
+
+
+    tbody.insertAdjacentHTML(
+      "beforeend",
+      `
+
+      <tr>
+
+        <td>${job.jobNumber || ""}</td>
+
+        <td>${job.clientName || ""}</td>
+
+        <td>${job.mobile || ""}</td>
+
+        <td>
+          ${job.manufacturer || ""}
+          ${job.model || ""}
+        </td>
+
+        <td>${job.status || ""}</td>
+
+        <td>${job.center || ""}</td>
+
+      </tr>
+
+      `
+    );
+
+
+  });
+
+}
+
+
+document
+  .getElementById("jobSearch")
+  .addEventListener(
+    "input",
+    function() {
+
+      const value =
+        this.value
+          .toLowerCase()
+          .trim();
+
+
+      if (!value) {
+
+        renderJobs(jobsCache);
+        return;
+
+      }
+
+
+      const filtered =
+        jobsCache.filter(job =>
+
+          JSON.stringify(job)
+            .toLowerCase()
+            .includes(value)
+
+        );
+
+
+      renderJobs(filtered);
+
+    }
+  );
+
+
+loadJobs();
+
+</script>

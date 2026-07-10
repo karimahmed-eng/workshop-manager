@@ -67,6 +67,16 @@ async function loadPage(page) {
 
     closeMobileSidebar();
 
+
+    if (page === "Jobs") {
+
+      if (typeof loadJobs === "function") {
+        loadJobs();
+      }
+
+    }
+
+
   }
 
   catch (error) {
@@ -75,11 +85,7 @@ async function loadPage(page) {
 
     document.getElementById("content").innerHTML = `
 
-      <div style="
-        padding:20px;
-        background:#fff;
-        border-radius:10px;
-      ">
+      <div style="padding:20px">
 
         <h3>Error loading page</h3>
 
@@ -219,6 +225,12 @@ window.addEventListener("resize",()=>{
     hideOverlay();
 
   }
+
+});
+
+document.addEventListener("DOMContentLoaded", () => {
+
+  loadPage("Dashboard");
 
 });
 

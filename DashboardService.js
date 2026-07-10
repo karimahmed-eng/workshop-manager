@@ -12,12 +12,7 @@ const DashboardService = (() => {
 
     const executionId = Utils.executionId();
 
-    let cacheState = "MISS";
-
-    const cache = CacheService.getScriptCache();
-    if (cache.get(WORKSHOP_CONFIG.Cache.KEY)) {
-      cacheState = "HIT";
-    }
+    const cacheState = "DISABLED";
 
     const jobs = DataRepository.getJobs();
 
@@ -65,7 +60,6 @@ const DashboardService = (() => {
       );
 
     Log.line("Sheets       : " + sheetCount);
-
     Log.line("Rows Read    : " + data.jobs.length);
     Log.line("Jobs Loaded  : " + data.jobs.length);
 

@@ -10,8 +10,13 @@
     </div>
 
     <div class="card">
-      <h3 id="pendingJobs">0</h3>
-      <span>Pending</span>
+      <h3 id="receivedJobs">0</h3>
+      <span>Received</span>
+    </div>
+
+    <div class="card">
+      <h3 id="processingJobs">0</h3>
+      <span>Under Processing</span>
     </div>
 
     <div class="card">
@@ -24,7 +29,13 @@
       <span>Delayed</span>
     </div>
 
+    <div class="card">
+      <h3 id="notApprovedJobs">0</h3>
+      <span>Not Approved</span>
+    </div>
+
   </div>
+
 
   <h2>Recent Jobs</h2>
 
@@ -37,6 +48,7 @@
         <th>Client</th>
         <th>Vehicle</th>
         <th>Status</th>
+        <th>Center</th>
       </tr>
 
     </thead>
@@ -47,6 +59,7 @@
 
 </div>
 
+
 <script>
 
 async function loadDashboard() {
@@ -55,30 +68,46 @@ async function loadDashboard() {
 
     const data = await API.getDashboard();
 
+    const statuses = data.summary.statuses || {};
+
+
     document.getElementById("totalJobs").textContent =
       data.summary.total || 0;
 
+
+    document.getElementById("receivedJobs").textContent =
+      statuses["Received"] || 0;
+
+
+    document.getElementById("processingJobs").textContent =
+      statuses["Under Processing"] || 0;
+
+
     document.getElementById("deliveredJobs").textContent =
-      data.summary.statuses["Delivered"] || 0;
+      statuses["Delivered"] || 0;
+
 
     document.getElementById("delayedJobs").textContent =
-      data.summary.statuses["Delayed"] || 0;
+      statuses["Delayed"] || 0;
 
-    const pending =
-      data.summary.total -
-      (data.summary.statuses["Delivered"] || 0);
 
-    document.getElementById("pendingJobs").textContent =
-      pending;
+    document.getElementById("notApprovedJobs").textContent =
+      statuses["Not Approved"] || 0;
+
 
     const table =
       document.getElementById("recentJobsTable");
 
+
     table.innerHTML = "";
 
-    data.recentJobs.forEach(job => {
 
-      table.insertAdjacentHTML("beforeend", `
+    (data.recentJobs || []).forEach(job => {
+
+
+      table.insertAdjacentHTML(
+        "beforeend",
+        `
 
         <tr>
 
@@ -87,29 +116,36 @@ async function loadDashboard() {
           <td>${job.clientName || ""}</td>
 
           <td>
-
             ${job.manufacturer || ""}
             ${job.model || ""}
-
           </td>
 
           <td>${job.status || ""}</td>
 
+          <td>${job.center || ""}</td>
+
         </tr>
 
-      `);
+        `
+      );
+
 
     });
 
+
   }
 
-  catch (error) {
+  catch(error) {
 
-    console.error(error);
+    console.error(
+      "Dashboard loading failed:",
+      error
+    );
 
   }
 
 }
+
 
 loadDashboard();
 

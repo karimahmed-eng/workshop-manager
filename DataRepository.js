@@ -6,44 +6,24 @@
 
 const DataRepository = (() => {
 
+  /**
+   * Public
+   */
   function getJobs() {
-
-    const cache = CacheService.getScriptCache();
-    const cacheKey = WORKSHOP_CONFIG.Cache.KEY;
-
-    const cached = cache.get(cacheKey);
-
-    if (cached) {
-      return JSON.parse(cached);
-    }
-
-    const jobs = loadJobs();
-
-    cache.put(
-      cacheKey,
-      JSON.stringify(jobs),
-      WORKSHOP_CONFIG.Cache.TTL_SECONDS
-    );
-
-    return jobs;
-
+    return loadJobs();
   }
 
   function refreshCache() {
-
-    clearCache();
-    return getJobs();
-
+    return loadJobs();
   }
 
   function clearCache() {
-
-    CacheService
-      .getScriptCache()
-      .remove(WORKSHOP_CONFIG.Cache.KEY);
-
+    // Cache intentionally disabled.
   }
 
+  /**
+   * Read all configured sheets
+   */
   function loadJobs() {
 
     const jobs = [];
@@ -58,16 +38,12 @@ const DataRepository = (() => {
 
         if (!sheet) return;
 
-        const values = sheet
-          .getDataRange()
-          .getValues();
+        const values = sheet.getDataRange().getValues();
 
         if (values.length <= 1) return;
 
         for (let i = 1; i < values.length; i++) {
-
           jobs.push(normalizeRow(values[i]));
-
         }
 
       });
@@ -78,6 +54,10 @@ const DataRepository = (() => {
 
   }
 
+  /**
+   * Normalize a spreadsheet row into
+   * a standard job object.
+   */
   function normalizeRow(row) {
 
     const c = WORKSHOP_CONFIG.Sheets.Columns;
@@ -85,6 +65,7 @@ const DataRepository = (() => {
     return {
 
       jobNumber: row[c.JOB_NUMBER],
+
       entryDate: row[c.ENTRY_DATE],
       exitDate: row[c.EXIT_DATE],
 
@@ -97,7 +78,9 @@ const DataRepository = (() => {
       requestedServices: row[c.REQUESTED_SERVICES],
 
       clientName: row[c.CLIENT_NAME],
-      mobile: Utils.formatPhone(row[c.CLIENT_PHONE]),
+      mobile: Utils.formatPhone(
+        row[c.CLIENT_PHONE]
+      ),
 
       salesName: row[c.SALES_NAME],
 
