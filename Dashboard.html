@@ -1,143 +1,118 @@
-<div class="page dashboard-page">
+<div class="dashboard">
 
-  <div class="page-title">
-    <h2>Dashboard</h2>
-    <p>Workshop overview and daily activity</p>
-  </div>
+  <h1>Dashboard</h1>
 
+  <div class="cards">
 
-  <!-- Summary Cards -->
-  <div class="dashboard-cards">
+```
+<div class="card">
+  <h3 id="totalJobs">0</h3>
+  <span>Total Jobs</span>
+</div>
 
-    <div class="stat-card">
-      <div class="stat-icon">🔧</div>
-      <div>
-        <h3>298</h3>
-        <span>Total Jobs</span>
-      </div>
-    </div>
+<div class="card">
+  <h3 id="pendingJobs">0</h3>
+  <span>Pending</span>
+</div>
 
+<div class="card">
+  <h3 id="deliveredJobs">0</h3>
+  <span>Delivered</span>
+</div>
 
-    <div class="stat-card">
-      <div class="stat-icon">⏳</div>
-      <div>
-        <h3>41</h3>
-        <span>Pending</span>
-      </div>
-    </div>
-
-
-    <div class="stat-card">
-      <div class="stat-icon">✅</div>
-      <div>
-        <h3>219</h3>
-        <span>Delivered</span>
-      </div>
-    </div>
-
-
-    <div class="stat-card">
-      <div class="stat-icon">⚠️</div>
-      <div>
-        <h3>5</h3>
-        <span>Delayed</span>
-      </div>
-    </div>
+<div class="card">
+  <h3 id="delayedJobs">0</h3>
+  <span>Delayed</span>
+</div>
+```
 
   </div>
 
+  <h2>Recent Jobs</h2>
 
+  <table class="jobs-table">
 
-  <!-- Recent Jobs -->
-  <div class="dashboard-section">
+```
+<thead>
+  <tr>
+    <th>Job</th>
+    <th>Client</th>
+    <th>Vehicle</th>
+    <th>Status</th>
+  </tr>
+</thead>
 
-    <div class="section-header">
-      <h3>Recent Jobs</h3>
-      <button class="btn-primary">
-        View All
-      </button>
-    </div>
+<tbody id="recentJobsTable"></tbody>
+```
 
-
-    <div class="table-wrapper">
-
-      <table>
-
-        <thead>
-          <tr>
-            <th>Job No.</th>
-            <th>Customer</th>
-            <th>Vehicle</th>
-            <th>Status</th>
-          </tr>
-        </thead>
-
-
-        <tbody>
-
-          <tr>
-            <td>J-10245</td>
-            <td>Ahmed Ali</td>
-            <td>Toyota Corolla</td>
-            <td>
-              <span class="status delivered">
-                Delivered
-              </span>
-            </td>
-          </tr>
-
-
-          <tr>
-            <td>J-10246</td>
-            <td>Mohamed Hassan</td>
-            <td>Kia Sportage</td>
-            <td>
-              <span class="status pending">
-                Pending
-              </span>
-            </td>
-          </tr>
-
-
-        </tbody>
-
-      </table>
-
-    </div>
-
-  </div>
-
-
-
-  <!-- Quick Actions -->
-  <div class="dashboard-section">
-
-    <h3>Quick Actions</h3>
-
-
-    <div class="quick-actions">
-
-      <button class="action-card">
-        ➕
-        <span>New Job</span>
-      </button>
-
-
-      <button class="action-card">
-        🔍
-        <span>Search Job</span>
-      </button>
-
-
-      <button class="action-card">
-        📊
-        <span>Reports</span>
-      </button>
-
-    </div>
-
-
-  </div>
-
+  </table>
 
 </div>
+
+<script>
+
+function loadDashboard() {
+
+  google.script.run
+    .withSuccessHandler(function(data) {
+
+
+      document.getElementById("totalJobs").textContent =
+        data.summary.total;
+
+
+      document.getElementById("pendingJobs").textContent =
+        data.summary.pending;
+
+
+      document.getElementById("deliveredJobs").textContent =
+        data.summary.delivered;
+
+
+      document.getElementById("delayedJobs").textContent =
+        data.summary.delayed;
+
+
+
+      const table =
+        document.getElementById("recentJobsTable");
+
+
+      table.innerHTML = "";
+
+
+      data.recentJobs.forEach(job => {
+
+
+        table.innerHTML += `
+
+          <tr>
+
+            <td>${job.Job || ""}</td>
+
+            <td>${job["Client Name"] || ""}</td>
+
+            <td>
+              ${job.Manufacturer || ""}
+              ${job["Car Model"] || ""}
+            </td>
+
+            <td>${job.Status || ""}</td>
+
+          </tr>
+
+        `;
+
+
+      });
+
+
+    })
+    .getDashboardData();
+
+}
+
+
+loadDashboard();
+
+</script>
