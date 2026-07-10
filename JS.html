@@ -1,0 +1,314 @@
+<script>
+
+
+let currentPage = "Dashboard";
+
+
+
+/* ==========================
+   LOAD PAGE
+========================== */
+
+
+function loadPage(page) {
+
+
+  google.script.run
+
+    .withSuccessHandler(function(html){
+
+
+      document.getElementById("content").innerHTML = html;
+
+
+      highlightMenu(page);
+
+
+      updatePageTitle(page);
+
+
+      currentPage = page;
+
+
+
+      // Close mobile menu after navigation
+
+      closeMobileSidebar();
+
+
+
+    })
+
+
+    .withFailureHandler(function(error){
+
+
+      console.error(error);
+
+
+      document.getElementById("content").innerHTML = `
+
+        <div style="
+          padding:20px;
+          background:#fff;
+          border-radius:10px;
+        ">
+
+          <h3>
+            Error loading page
+          </h3>
+
+          <p>
+            ${error.message}
+          </p>
+
+        </div>
+
+      `;
+
+
+    })
+
+
+    .getPage(page);
+
+
+}
+
+
+
+/* ==========================
+   MENU HIGHLIGHT
+========================== */
+
+
+function highlightMenu(page){
+
+
+  document
+    .querySelectorAll(".menu-btn")
+    .forEach(button=>{
+
+
+      button.classList.remove("active");
+
+
+      if(button.dataset.page === page){
+
+
+        button.classList.add("active");
+
+
+      }
+
+
+    });
+
+
+}
+
+
+
+/* ==========================
+   PAGE TITLE
+========================== */
+
+
+function updatePageTitle(page){
+
+
+  const title =
+    document.getElementById("pageTitle");
+
+
+  if(title){
+
+
+    title.innerText = page;
+
+
+  }
+
+
+}
+
+
+
+/* ==========================
+   SIDEBAR TOGGLE
+========================== */
+
+
+function toggleSidebar(){
+
+
+  const sidebar =
+    document.getElementById("sidebar");
+
+
+
+  if(!sidebar)
+    return;
+
+
+
+  // Mobile
+
+  if(window.innerWidth <= 768){
+
+
+    sidebar.classList.toggle(
+      "mobile-open"
+    );
+
+
+    toggleOverlay();
+
+
+
+  }
+
+
+  // Desktop
+
+  else {
+
+
+    sidebar.classList.toggle(
+      "collapsed"
+    );
+
+
+  }
+
+
+
+}
+
+
+
+/* ==========================
+   MOBILE SIDEBAR CLOSE
+========================== */
+
+
+function closeMobileSidebar(){
+
+
+  const sidebar =
+    document.getElementById("sidebar");
+
+
+  if(!sidebar)
+    return;
+
+
+
+  if(window.innerWidth <= 768){
+
+
+    sidebar.classList.remove(
+      "mobile-open"
+    );
+
+
+    hideOverlay();
+
+
+  }
+
+
+}
+
+
+
+/* ==========================
+   OVERLAY
+========================== */
+
+
+function toggleOverlay(){
+
+
+  const overlay =
+    document.getElementById("overlay");
+
+
+
+  if(!overlay)
+    return;
+
+
+
+  overlay.classList.toggle(
+    "show"
+  );
+
+
+}
+
+
+
+function hideOverlay(){
+
+
+  const overlay =
+    document.getElementById("overlay");
+
+
+
+  if(!overlay)
+    return;
+
+
+
+  overlay.classList.remove(
+    "show"
+  );
+
+
+}
+
+
+
+/* ==========================
+   RESPONSIVE CLEANUP
+========================== */
+
+
+window.addEventListener(
+  "resize",
+  function(){
+
+
+    const sidebar =
+      document.getElementById("sidebar");
+
+
+
+    if(!sidebar)
+      return;
+
+
+
+    if(window.innerWidth > 768){
+
+
+      sidebar.classList.remove(
+        "mobile-open"
+      );
+
+
+      hideOverlay();
+
+
+    }
+
+
+  }
+
+);
+
+
+
+</script>

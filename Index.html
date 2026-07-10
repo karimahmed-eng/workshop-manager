@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+
+  <title>Workshop Manager</title>
+
+  <?!= include("CSS"); ?>
+
+  <!-- Google Material Symbols -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet">
+
+</head>
+
+<body>
+
+<div class="app">
+
+    <!-- Sidebar -->
+    <?!= include("Sidebar"); ?>
+
+    <!-- Mobile Overlay -->
+    <div id="overlay" class="overlay" onclick="toggleSidebar()"></div>
+
+    <!-- Main Area -->
+    <div class="main">
+
+        <?!= include("Header"); ?>
+
+        <main id="content">
+
+            <?!= include("Dashboard"); ?>
+
+        </main>
+
+    </div>
+
+</div>
+
+<?!= include("JS"); ?>
+
+</body>
+
+</html>
