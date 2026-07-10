@@ -10,17 +10,7 @@ const WORKSHOP_CONFIG = {
       id: "121RzbHqdu2tkKzlPO20nIsFTsDmETdKg2hPnDoxOfQ8",
       sheets: [
         "July 2026",
-        "2026 Archive",
-        "2025 Archive",
-        "2024 Archive"
-      ]
-    },
-    {
-      id: "1jPRqyCbuI8ng4mUXGcdJPKB4Co0KRB1Wh6sz3AZ2LeU",
-      sheets: [
-        "July 2026",
-        "June 2026",
-        "May 2026"
+        "2026 Archive"
       ]
     }
   ],

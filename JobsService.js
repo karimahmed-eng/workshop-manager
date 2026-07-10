@@ -1,125 +1,153 @@
 /*************************************************
- * Utilities.js
+ * JobsService.js
+ * Workshop Manager Jobs Logic
  *************************************************/
 
 
-function getAllJobsData() {
-
-  const jobs = [];
-
-  WORKSHOP_CONFIG.sources.forEach(source => {
-
-    const ss = SpreadsheetApp.openById(source.id);
-
-    source.sheets.forEach(sheetName => {
-
-      const sheet = ss.getSheetByName(sheetName);
-
-      if (!sheet) return;
+function getJobs() {
 
 
-      const values = sheet.getDataRange().getValues();
-
-      if (values.length <= 1) return;
+  Logger.log("========== getJobs START ==========");
 
 
-      const headers = values[0];
+  try {
 
 
-      values.slice(1).forEach(row => {
+    const jobs = getAllJobsData();
 
 
-        const jobNumber = String(row[0] || "").trim();
+    Logger.log(
+      "[RESULT] Jobs received: " + jobs.length
+    );
 
 
-        // Skip empty rows and placeholder rows
-        if (
-          !jobNumber ||
-          jobNumber.toLowerCase() === "enter here"
-        ) {
-          return;
-        }
+    Logger.log("========== getJobs END ==========");
 
 
-        jobs.push(
-          mapJobRow(headers, row)
-        );
+    return jobs;
 
 
-      });
+  } catch(error) {
 
 
-    });
+    Logger.log("[ERROR] getJobs failed");
+
+    Logger.log(error.stack);
+
+    throw error;
 
 
-  });
-
-
-  return jobs;
+  }
 
 }
 
 
 
-function mapJobRow(headers, row) {
-
-  const job = {};
-
-  headers.forEach((header, index) => {
-
-    job[header] = row[index];
-
-  });
 
 
-  return job;
+function getJobSummary() {
 
-}
 
-function testWorkshopConnection() {
+  Logger.log("========== getJobSummary START ==========");
 
-  WORKSHOP_CONFIG.sources.forEach(source => {
 
-    const ss = SpreadsheetApp.openById(source.id);
+  try {
 
-    Logger.log("SOURCE: " + ss.getName());
 
-    source.sheets.forEach(name => {
+    const jobs = getJobs();
 
-      const sheet = ss.getSheetByName(name);
+
+    const summary = {
+
+
+      total: jobs.length,
+
+      delivered: 0,
+
+      pending: 0,
+
+      delayed: 0,
+
+      notApproved: 0
+
+
+    };
+
+
+
+    jobs.forEach(job => {
+
+
+      const status =
+        String(job.Status || "")
+        .toLowerCase()
+        .trim();
+
+
 
       Logger.log(
-        name + " => " + (sheet ? "FOUND" : "MISSING")
+        "[STATUS] " + status
       );
 
-      if (sheet) {
-        Logger.log(
-          "Rows: " + sheet.getLastRow()
-        );
+
+
+      if (status.includes("delivered")) {
+
+
+        summary.delivered++;
+
+
+      } 
+      else if (status.includes("delayed")) {
+
+
+        summary.delayed++;
+
+
+      } 
+      else if (status.includes("not approved")) {
+
+
+        summary.notApproved++;
+
+
+      } 
+      else {
+
+
+        summary.pending++;
+
+
       }
+
 
     });
 
-  });
 
-}
 
-function testJobsRead() {
+    Logger.log(
+      "[SUMMARY] " + JSON.stringify(summary)
+    );
 
-  const source = WORKSHOP_CONFIG.sources[0];
 
-  const ss = SpreadsheetApp.openById(source.id);
+    Logger.log("========== getJobSummary END ==========");
 
-  const sheet = ss.getSheetByName(source.sheets[0]);
 
-  const data = sheet.getDataRange().getValues();
+    return summary;
 
-  Logger.log("Total rows: " + data.length);
 
-  Logger.log("HEADERS:");
-  Logger.log(JSON.stringify(data[0]));
 
-  Logger.log("FIRST DATA ROW:");
-  Logger.log(JSON.stringify(data[1]));
+  } catch(error) {
+
+
+    Logger.log("[ERROR] getJobSummary failed");
+
+    Logger.log(error.stack);
+
+    throw error;
+
+
+  }
+
 
 }
