@@ -4,27 +4,25 @@
 
   <div class="cards">
 
-```
-<div class="card">
-  <h3 id="totalJobs">0</h3>
-  <span>Total Jobs</span>
-</div>
+    <div class="card">
+      <h3 id="totalJobs">0</h3>
+      <span>Total Jobs</span>
+    </div>
 
-<div class="card">
-  <h3 id="pendingJobs">0</h3>
-  <span>Pending</span>
-</div>
+    <div class="card">
+      <h3 id="pendingJobs">0</h3>
+      <span>Pending</span>
+    </div>
 
-<div class="card">
-  <h3 id="deliveredJobs">0</h3>
-  <span>Delivered</span>
-</div>
+    <div class="card">
+      <h3 id="deliveredJobs">0</h3>
+      <span>Delivered</span>
+    </div>
 
-<div class="card">
-  <h3 id="delayedJobs">0</h3>
-  <span>Delayed</span>
-</div>
-```
+    <div class="card">
+      <h3 id="delayedJobs">0</h3>
+      <span>Delayed</span>
+    </div>
 
   </div>
 
@@ -32,18 +30,18 @@
 
   <table class="jobs-table">
 
-```
-<thead>
-  <tr>
-    <th>Job</th>
-    <th>Client</th>
-    <th>Vehicle</th>
-    <th>Status</th>
-  </tr>
-</thead>
+    <thead>
 
-<tbody id="recentJobsTable"></tbody>
-```
+      <tr>
+        <th>Job</th>
+        <th>Client</th>
+        <th>Vehicle</th>
+        <th>Status</th>
+      </tr>
+
+    </thead>
+
+    <tbody id="recentJobsTable"></tbody>
 
   </table>
 
@@ -51,67 +49,67 @@
 
 <script>
 
-function loadDashboard() {
+async function loadDashboard() {
 
-  google.script.run
-    .withSuccessHandler(function(data) {
+  try {
 
+    const data = await API.getDashboard();
 
-      document.getElementById("totalJobs").textContent =
-        data.summary.total;
+    document.getElementById("totalJobs").textContent =
+      data.summary.total || 0;
 
+    document.getElementById("deliveredJobs").textContent =
+      data.summary.statuses["Delivered"] || 0;
 
-      document.getElementById("pendingJobs").textContent =
-        data.summary.pending;
+    document.getElementById("delayedJobs").textContent =
+      data.summary.statuses["Delayed"] || 0;
 
+    const pending =
+      data.summary.total -
+      (data.summary.statuses["Delivered"] || 0);
 
-      document.getElementById("deliveredJobs").textContent =
-        data.summary.delivered;
+    document.getElementById("pendingJobs").textContent =
+      pending;
 
+    const table =
+      document.getElementById("recentJobsTable");
 
-      document.getElementById("delayedJobs").textContent =
-        data.summary.delayed;
+    table.innerHTML = "";
 
+    data.recentJobs.forEach(job => {
 
+      table.insertAdjacentHTML("beforeend", `
 
-      const table =
-        document.getElementById("recentJobsTable");
+        <tr>
 
+          <td>${job.jobNumber || ""}</td>
 
-      table.innerHTML = "";
+          <td>${job.clientName || ""}</td>
 
+          <td>
 
-      data.recentJobs.forEach(job => {
+            ${job.manufacturer || ""}
+            ${job.model || ""}
 
+          </td>
 
-        table.innerHTML += `
+          <td>${job.status || ""}</td>
 
-          <tr>
+        </tr>
 
-            <td>${job.Job || ""}</td>
+      `);
 
-            <td>${job["Client Name"] || ""}</td>
+    });
 
-            <td>
-              ${job.Manufacturer || ""}
-              ${job["Car Model"] || ""}
-            </td>
+  }
 
-            <td>${job.Status || ""}</td>
+  catch (error) {
 
-          </tr>
+    console.error(error);
 
-        `;
-
-
-      });
-
-
-    })
-    .getDashboardData();
+  }
 
 }
-
 
 loadDashboard();
 

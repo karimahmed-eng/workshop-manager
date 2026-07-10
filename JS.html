@@ -1,314 +1,225 @@
 <script>
 
-
 let currentPage = "Dashboard";
 
+/* ==========================
+   API
+========================== */
+
+const API = {
+
+  run(functionName, ...args) {
+
+    return new Promise((resolve, reject) => {
+
+      google.script.run
+        .withSuccessHandler(resolve)
+        .withFailureHandler(reject)[functionName](...args);
+
+    });
+
+  },
+
+  getPage(page) {
+    return this.run("getPage", page);
+  },
+
+  getDashboard() {
+    return this.run("getDashboardData");
+  },
+
+  refreshDashboard() {
+    return this.run("refreshDashboardData");
+  },
+
+  searchJobs(keyword) {
+    return this.run("searchJobs", keyword);
+  },
+
+  filterJobs(filters) {
+    return this.run("filterJobs", filters);
+  },
+
+  getJob(jobNumber) {
+    return this.run("getJob", jobNumber);
+  }
+
+};
 
 
 /* ==========================
    LOAD PAGE
 ========================== */
 
+async function loadPage(page) {
 
-function loadPage(page) {
+  try {
 
+    const html = await API.getPage(page);
 
-  google.script.run
+    document.getElementById("content").innerHTML = html;
 
-    .withSuccessHandler(function(html){
+    highlightMenu(page);
 
+    updatePageTitle(page);
 
-      document.getElementById("content").innerHTML = html;
+    currentPage = page;
 
+    closeMobileSidebar();
 
-      highlightMenu(page);
+  }
 
+  catch (error) {
 
-      updatePageTitle(page);
+    console.error(error);
 
+    document.getElementById("content").innerHTML = `
 
-      currentPage = page;
+      <div style="
+        padding:20px;
+        background:#fff;
+        border-radius:10px;
+      ">
 
+        <h3>Error loading page</h3>
 
+        <p>${error.message}</p>
 
-      // Close mobile menu after navigation
+      </div>
 
-      closeMobileSidebar();
+    `;
 
-
-
-    })
-
-
-    .withFailureHandler(function(error){
-
-
-      console.error(error);
-
-
-      document.getElementById("content").innerHTML = `
-
-        <div style="
-          padding:20px;
-          background:#fff;
-          border-radius:10px;
-        ">
-
-          <h3>
-            Error loading page
-          </h3>
-
-          <p>
-            ${error.message}
-          </p>
-
-        </div>
-
-      `;
-
-
-    })
-
-
-    .getPage(page);
-
+  }
 
 }
 
 
-
 /* ==========================
-   MENU HIGHLIGHT
+   MENU
 ========================== */
 
-
 function highlightMenu(page){
-
 
   document
     .querySelectorAll(".menu-btn")
     .forEach(button=>{
 
-
       button.classList.remove("active");
 
-
-      if(button.dataset.page === page){
-
+      if(button.dataset.page===page){
 
         button.classList.add("active");
 
-
       }
-
 
     });
 
-
 }
 
 
-
 /* ==========================
-   PAGE TITLE
+   TITLE
 ========================== */
-
 
 function updatePageTitle(page){
 
-
-  const title =
-    document.getElementById("pageTitle");
-
+  const title=document.getElementById("pageTitle");
 
   if(title){
 
-
-    title.innerText = page;
-
+    title.textContent=page;
 
   }
-
 
 }
 
 
-
 /* ==========================
-   SIDEBAR TOGGLE
+   SIDEBAR
 ========================== */
-
 
 function toggleSidebar(){
 
+  const sidebar=document.getElementById("sidebar");
 
-  const sidebar =
-    document.getElementById("sidebar");
+  if(!sidebar) return;
 
+  if(window.innerWidth<=768){
 
-
-  if(!sidebar)
-    return;
-
-
-
-  // Mobile
-
-  if(window.innerWidth <= 768){
-
-
-    sidebar.classList.toggle(
-      "mobile-open"
-    );
-
+    sidebar.classList.toggle("mobile-open");
 
     toggleOverlay();
 
+  }else{
 
-
-  }
-
-
-  // Desktop
-
-  else {
-
-
-    sidebar.classList.toggle(
-      "collapsed"
-    );
-
+    sidebar.classList.toggle("collapsed");
 
   }
-
-
 
 }
-
-
-
-/* ==========================
-   MOBILE SIDEBAR CLOSE
-========================== */
 
 
 function closeMobileSidebar(){
 
+  const sidebar=document.getElementById("sidebar");
 
-  const sidebar =
-    document.getElementById("sidebar");
+  if(!sidebar) return;
 
+  if(window.innerWidth<=768){
 
-  if(!sidebar)
-    return;
-
-
-
-  if(window.innerWidth <= 768){
-
-
-    sidebar.classList.remove(
-      "mobile-open"
-    );
-
+    sidebar.classList.remove("mobile-open");
 
     hideOverlay();
 
-
   }
 
-
 }
-
 
 
 /* ==========================
    OVERLAY
 ========================== */
 
-
 function toggleOverlay(){
 
+  const overlay=document.getElementById("overlay");
 
-  const overlay =
-    document.getElementById("overlay");
+  if(!overlay) return;
 
-
-
-  if(!overlay)
-    return;
-
-
-
-  overlay.classList.toggle(
-    "show"
-  );
-
+  overlay.classList.toggle("show");
 
 }
-
 
 
 function hideOverlay(){
 
+  const overlay=document.getElementById("overlay");
 
-  const overlay =
-    document.getElementById("overlay");
+  if(!overlay) return;
 
-
-
-  if(!overlay)
-    return;
-
-
-
-  overlay.classList.remove(
-    "show"
-  );
-
+  overlay.classList.remove("show");
 
 }
 
 
-
 /* ==========================
-   RESPONSIVE CLEANUP
+   RESIZE
 ========================== */
 
+window.addEventListener("resize",()=>{
 
-window.addEventListener(
-  "resize",
-  function(){
+  const sidebar=document.getElementById("sidebar");
 
+  if(!sidebar) return;
 
-    const sidebar =
-      document.getElementById("sidebar");
+  if(window.innerWidth>768){
 
+    sidebar.classList.remove("mobile-open");
 
-
-    if(!sidebar)
-      return;
-
-
-
-    if(window.innerWidth > 768){
-
-
-      sidebar.classList.remove(
-        "mobile-open"
-      );
-
-
-      hideOverlay();
-
-
-    }
-
+    hideOverlay();
 
   }
 
-);
-
-
+});
 
 </script>

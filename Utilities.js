@@ -1,145 +1,129 @@
 /*************************************************
  * Utilities.js
- * Workshop Manager Data Utilities
+ * Workshop Manager Utilities
+ * Milestone 1
  *************************************************/
 
-
-function getAllJobsData() {
-
-  Logger.log("========== getAllJobsData START ==========");
-
-  const jobs = [];
-
-
-  try {
-
-    WORKSHOP_CONFIG.sources.forEach(source => {
-
-
-      Logger.log("[SOURCE] Opening: " + source.id);
-
-
-      const ss = SpreadsheetApp.openById(source.id);
-
-
-      Logger.log("[SOURCE] Opened: " + ss.getName());
-
-
-      source.sheets.forEach(sheetName => {
-
-
-        Logger.log("[SHEET] Reading: " + sheetName);
-
-
-        const sheet = ss.getSheetByName(sheetName);
-
-
-        if (!sheet) {
-
-          Logger.log("[WARNING] Sheet missing: " + sheetName);
-
-          return;
-
-        }
-
-
-        const values = sheet.getDataRange().getValues();
-
-
-        Logger.log(
-          "[SHEET] Rows found: " + values.length
-        );
-
-
-        if (values.length <= 1) {
-
-          Logger.log("[WARNING] No data rows");
-
-          return;
-
-        }
-
-
-        const headers = values[0];
-
-
-        values.slice(1).forEach((row, index) => {
-
-
-          const jobNumber = String(row[0] || "").trim();
-
-
-          if (
-            !jobNumber ||
-            jobNumber.toLowerCase() === "enter here"
-          ) {
-
-            Logger.log(
-              "[SKIP] Row " + (index + 2)
-            );
-
-            return;
-
-          }
-
-
-          jobs.push(
-            mapJobRow(headers, row)
-          );
-
-
-        });
-
-
-      });
-
-
-    });
-
-
-    Logger.log(
-      "[RESULT] Total jobs loaded: " + jobs.length
-    );
-
-
-    Logger.log("========== getAllJobsData END ==========");
-
-
-    return jobs;
-
-
-  } catch (error) {
-
-
-    Logger.log("[ERROR] getAllJobsData failed");
-
-    Logger.log(error.stack);
-
-    throw error;
-
+const Utils = (() => {
+
+  function normalizeText(value) {
+    return String(value || "")
+      .trim()
+      .replace(/\s+/g, " ")
+      .toLowerCase();
+  }
+
+  function normalizeStatusList(value) {
+
+    if (!value) return [];
+
+    return String(value)
+      .replace(/\r/g, "\n")
+      .replace(/[\/\\|;,]+/g, "\n")
+      .split("\n")
+      .map(normalizeText)
+      .filter(Boolean);
 
   }
 
-}
+  function hasStatus(value, status) {
+
+    const statuses = normalizeStatusList(value);
+
+    return statuses.includes(
+      normalizeText(status)
+    );
+
+  }
+
+  function formatPhone(value) {
+
+    return String(value || "")
+      .replace(/\D/g, "");
+
+  }
+
+  function executionId() {
+
+    return Utilities.formatDate(
+      new Date(),
+      Session.getScriptTimeZone(),
+      "yyyyMMdd-HHmmss"
+    );
+
+  }
+
+  function elapsed(start) {
+
+    return (
+      ((Date.now() - start) / 1000).toFixed(2) +
+      " sec"
+    );
+
+  }
+
+  return {
+
+    normalizeText,
+    normalizeStatusList,
+    hasStatus,
+    formatPhone,
+    executionId,
+    elapsed
+
+  };
+
+})();
 
 
 
-function mapJobRow(headers, row) {
+const Log = (() => {
 
+  function line(text) {
 
-  const job = {};
+    if (!WORKSHOP_CONFIG.Logger.ENABLED) return;
 
+    Logger.log(text);
 
-  headers.forEach((header, index) => {
+  }
 
+  function divider() {
 
-    job[header] = row[index];
+    line("================================");
 
+  }
 
-  });
+  function header(title) {
 
+    line("========== " + title + " ==========");
 
-  return job;
+  }
 
+  function statusCounts(counts) {
 
-}
+    line("");
+    line("Status Counts");
+    line("-------------");
+
+    WORKSHOP_CONFIG.Statuses.forEach(status => {
+
+      line(
+        status.padEnd(20, " ") +
+        " : " +
+        (counts[status] || 0)
+      );
+
+    });
+
+  }
+
+  return {
+
+    line,
+    divider,
+    header,
+    statusCounts
+
+  };
+
+})();

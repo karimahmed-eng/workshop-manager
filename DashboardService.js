@@ -1,97 +1,89 @@
 /*************************************************
  * DashboardService.js
- * Workshop Manager Dashboard Data
+ * Workshop Manager
+ * Milestone 1
  *************************************************/
 
+const DashboardService = (() => {
 
-function getDashboardData() {
+  function getDashboardData() {
 
+    const start = Date.now();
 
-  Logger.log("========== getDashboardData START ==========");
+    const executionId = Utils.executionId();
 
+    let cacheState = "MISS";
 
-  try {
+    const cache = CacheService.getScriptCache();
+    if (cache.get(WORKSHOP_CONFIG.Cache.KEY)) {
+      cacheState = "HIT";
+    }
 
+    const jobs = DataRepository.getJobs();
 
-    Logger.log("[STEP 1] Loading summary");
+    const summary = JobsService.buildSummary(jobs);
 
-
-    const summary = getJobSummary();
-
-
-
-    Logger.log("[STEP 2] Loading jobs");
-
-
-    const jobs = getJobs();
-
-
-
-    Logger.log(
-      "[STEP 3] Jobs loaded: " + jobs.length
+    const recentJobs = JobsService.getRecentJobs(
+      jobs,
+      WORKSHOP_CONFIG.Dashboard.RECENT_JOBS_LIMIT
     );
 
+    writeLog({
+      executionId,
+      cacheState,
+      jobs,
+      summary,
+      elapsed: Utils.elapsed(start)
+    });
 
-
-    const recentJobs = jobs
-      .sort((a, b) => {
-
-
-        return new Date(b["Entry Date"])
-          -
-        new Date(a["Entry Date"]);
-
-
-      })
-      .slice(0,10);
-
-
-
-    Logger.log(
-      "[RESULT] Recent jobs: " +
-      recentJobs.length
-    );
-
-
-
-    const result = {
-
-
-      summary: summary,
-
-      recentJobs: recentJobs
-
-
+    return {
+      summary,
+      recentJobs,
+      jobs
     };
-
-
-
-    Logger.log(
-      "[RETURN] " + JSON.stringify(result)
-    );
-
-
-
-    Logger.log("========== getDashboardData END ==========");
-
-
-
-    return result;
-
-
-
-  } catch(error) {
-
-
-
-    Logger.log("[ERROR] Dashboard failed");
-
-    Logger.log(error.stack);
-
-    throw error;
-
 
   }
 
+  function writeLog(data) {
 
-}
+    if (!WORKSHOP_CONFIG.Logger.ENABLED) return;
+
+    Log.header(WORKSHOP_CONFIG.Logger.TITLE);
+
+    Log.line("Execution ID : " + data.executionId);
+    Log.line("Cache        : " + data.cacheState);
+
+    Log.line(
+      "Sources      : " +
+      WORKSHOP_CONFIG.Sources.Spreadsheets.length
+    );
+
+    const sheetCount =
+      WORKSHOP_CONFIG.Sources.Spreadsheets.reduce(
+        (count, source) => count + source.sheets.length,
+        0
+      );
+
+    Log.line("Sheets       : " + sheetCount);
+
+    Log.line("Rows Read    : " + data.jobs.length);
+    Log.line("Jobs Loaded  : " + data.jobs.length);
+
+    if (WORKSHOP_CONFIG.Logger.SHOW_STATUS_COUNTS) {
+      Log.statusCounts(data.summary.statuses);
+    }
+
+    Log.line("");
+    Log.line("Execution Time : " + data.elapsed);
+
+    Log.divider();
+
+  }
+
+  return {
+
+    getDashboardData
+
+  };
+
+})();
